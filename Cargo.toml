@@ -1,0 +1,15 @@
+[package]
+name = "example-rust-worker"
+version = "0.1.0"
+authors = ["clinton"]
+edition = "2018"
+description="Example rust Cloudflare worker."
+license="MIT"
+readme="README.md"
+repository="https://github.com/monroeclinton/example-rust-worker"
+
+[dependencies]
+wasm-bindgen = "0.2.68"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
