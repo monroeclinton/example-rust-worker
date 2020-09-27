@@ -1,5 +1,10 @@
 /target
 /.idea
-/worker/generated
+/worker
+!/worker/router.js
+!/worker/worker.js
+/node_modules
+/dist
 
 wrangler.toml
+package-lock.json

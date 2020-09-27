@@ -11,7 +11,8 @@ Install [Wrangler](https://github.com/cloudflare/wrangler) and login to Cloudfla
 After you install Wrangler you need to initialize your site:
 
 ```
-wrangler init --type rust
+wrangler init --type webpack
+npm install
 ```
 
 Change the information in `wrangler.toml` with your credentials.

@@ -1,63 +1,85 @@
+const Router = require('./router');
+const wasm = import('../pkg');
+
+const router = new Router();
+
+router.get('/api/multiply', async (req, res) => {
+    const wasm_fn = await wasm;
+    const { multiply } = wasm_fn;
+
+    const url = new URL(req.url);
+    const params = new URLSearchParams(url.search);
+
+    let first = Number(params.get('first'));
+    let second = Number(params.get('second'));
+
+    if(
+        isNaN(first) || isNaN(second) ||
+        first > 255 || second > 255 ||
+        first < 0 || second < 0
+    ){
+        res.status(400).send(
+            createJson(
+                {}, {},
+                "Numbers must be between 0 and 255.",
+                400
+            )
+        );
+
+        return;
+    }
+
+    try{
+        const calculate = multiply(first, second)
+        res.send(createJson({ result: calculate }, {}));
+    }catch(e) {
+        res.status(500).send(
+            createJson(
+                {}, {},
+                "Something went wrong calculating the result.",
+                500
+            )
+        );
+    }
+});
+
+router.notFound((req, res) => {
+    res.status(404).send(
+        createJson(
+            {}, {},
+            "Route not found.",
+            404
+        )
+    )
+})
+
 addEventListener('fetch', event => {
     event.respondWith(handleRequest(event.request))
 })
 
-const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Max-Age": "86400",
+/**
+ * Respond to the request
+ *
+ * @param {Request} req
+ */
+async function handleRequest(req) {
+    return router.handle(req);
 }
 
 /**
- * Respond to the request
- * @param {Request} request
+ * Format JSON response for router
+ *
+ * @param data
+ * @param errors
+ * @param message
+ * @param status
+ * @returns {{data: *, message: null, errors: *, status: number}}
  */
-async function handleRequest(request) {
-    const { multiply } = wasm_bindgen;
-    await wasm_bindgen(wasm)
-
-    const url = new URL(request.url);
-    const params = new URLSearchParams(url.search);
-
-
-    if(url.pathname === "/api/multiply" && request.method === "GET"){
-        let first = parseInt(params.get('first'));
-        let second = parseInt(params.get('second'));
-
-        if(first > 255 || second > 255 || first < 0 || second < 0){
-            return createResponse(
-                {}, {},
-                "Numbers must be between 0 and 255.",
-                400
-            );
-        }
-
-        try{
-            const calculate = multiply(first, second)
-            return createResponse({ result: calculate }, {});
-        }catch(e) {
-            return createResponse(
-                {}, {},
-                "Something went wrong.",
-                500
-            );
-        }
-    }
-
-    return createResponse({}, {}, "Route not found.",404);
-}
-
-function createResponse(data, errors, message = null, status = 200) {
-    let json = {
+function createJson(data, errors, message = null, status = 200) {
+    return {
         data: data,
         errors: errors,
         message: message,
         status: status,
     }
-
-    return new Response(JSON.stringify(json), {
-        status: status,
-        headers: headers
-    })
 }
