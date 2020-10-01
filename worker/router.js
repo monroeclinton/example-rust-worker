@@ -5,7 +5,20 @@ const methods = require('methods');
  */
 function RouterResponse() {
     this.statusCode = 200;
+    this.headers = {};
     this.body;
+}
+
+/**
+ * Set response headers
+ *
+ * @param headers
+ * @returns {RouterResponse}
+ */
+RouterResponse.prototype.setHeaders = function(headers) {
+    this.headers = new Headers(headers);
+
+    return this;
 }
 
 /**
@@ -40,15 +53,20 @@ RouterResponse.prototype.send = function(data) {
 RouterResponse.prototype.end = function() {
     return new Response(JSON.stringify(this.body), {
         status: this.statusCode,
+        headers: this.headers,
     });
 }
 
 /**
  * Router
  **/
-function Router() {
+function Router(opts) {
+    opts = opts || {}
+
     this.stack = [];
     this.notfound = (req, res) => {  };
+
+    this.headers = opts.headers;
 }
 
 /**
@@ -58,6 +76,10 @@ function Router() {
  */
 Router.prototype.handle = async function (req) {
     let res = new RouterResponse();
+
+    if(this.headers){
+        res.setHeaders(this.headers);
+    }
 
     if(!(req instanceof Request)){
         return;

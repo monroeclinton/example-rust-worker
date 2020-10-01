@@ -1,7 +1,16 @@
 const Router = require('./router');
 const wasm = import('../pkg');
 
-const router = new Router();
+/**
+ * Create new router allowing all origins.
+ * Change the origin control to your needs.
+ * Be careful.
+ */
+const router = new Router({
+    headers: {
+        'Access-Control-Allow-Origin': '*',
+    }
+});
 
 router.get('/api/multiply', async (req, res) => {
     const wasm_fn = await wasm;
